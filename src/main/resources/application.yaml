@@ -1,3 +1,17 @@
+server:
+  port: 5000
+
 spring:
   application:
     name: LexChain
+
+
+
+  threads:
+    virtual:
+      enabled: true
+
+blockchain:
+  polygon:
+    amoy:
+      rpc-url: https://rpc-amoy.polygon.technology/
