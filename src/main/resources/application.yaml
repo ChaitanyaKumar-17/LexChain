@@ -6,6 +6,15 @@ spring:
     name: LexChain
 
 
+  config:
+    import: "optional:file:.env[.properties]"
+
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+
+
 
   threads:
     virtual:
