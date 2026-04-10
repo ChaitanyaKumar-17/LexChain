@@ -24,3 +24,5 @@ blockchain:
   polygon:
     amoy:
       rpc-url: https://rpc-amoy.polygon.technology/
+  contract:
+    address: ${SMART_CONTRACT_ADD}
