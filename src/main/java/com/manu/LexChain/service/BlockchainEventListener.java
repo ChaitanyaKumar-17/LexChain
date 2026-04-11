@@ -79,6 +79,44 @@ public class BlockchainEventListener {
                 },
                 error -> log.error("Error in blockchain listener: ", error)
         );
+
+        // 1. Define the exact signature of your DocumentVerified event
+        Event documentVerifiedEvent = new Event("DocumentVerified",
+                Arrays.asList(
+                        new TypeReference<Uint256>(false) {},    // id
+                        new TypeReference<Utf8String>(false) {}, // docHash
+                        new TypeReference<Address>(false) {}     // verifier
+                )
+        );
+
+        // 2. Generate the cryptographic topic hash
+        String verifiedTopic = EventEncoder.encode(documentVerifiedEvent);
+
+        // 3. Create the filter for this specific event
+        EthFilter verifiedFilter = new EthFilter(
+                DefaultBlockParameterName.LATEST,
+                DefaultBlockParameterName.LATEST,
+                contractAddress
+        );
+        verifiedFilter.addSingleTopic(verifiedTopic);
+
+        // 4. Subscribe to the live stream for verifications
+        web3j.ethLogFlowable(verifiedFilter).subscribe(
+                logData -> {
+                    // Decode the raw blockchain logs
+                    List<Type> results = FunctionReturnDecoder.decode(
+                            logData.getData(), documentVerifiedEvent.getNonIndexedParameters());
+
+                    String docHash = (String) results.get(1).getValue();
+
+                    log.info("Caught DocumentVerified event for hash: {}! Updating database...", docHash);
+
+                    // Tell the Service layer to update MongoDB
+                    documentService.markAsVerified(docHash);
+                    log.info("Document successfully marked as FULLY_EXECUTED in MongoDB.");
+                },
+                error -> log.error("Error in verification listener: ", error)
+        );
     }
 
     /**
