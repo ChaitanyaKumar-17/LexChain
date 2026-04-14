@@ -1,2 +1,17 @@
-/mvnw text eol=lf
+# --- Global Default ---
+# Auto-detect text files and normalize line endings to LF internally
+* text=auto
+
+# --- Backend (Maven Wrappers) ---
+# Updated path to point inside the new backend folder
+/backend/mvnw text eol=lf
 *.cmd text eol=crlf
+
+# --- General Scripts ---
+# Force standard shell scripts to LF and Windows batch to CRLF
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# --- Contracts ---
+# Ensure GitHub correctly highlights your smart contracts
+*.sol linguist-language=Solidity
