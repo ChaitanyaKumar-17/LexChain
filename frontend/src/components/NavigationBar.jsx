@@ -1,61 +1,10 @@
-import { useState, useEffect } from "react";
+// src/components/NavigationBar.jsx
 import { Link } from "react-router-dom";
-import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
+import { useWeb3 } from "../context/Web3Context";
 
 const NavigationBar = () => {
-  const [account, setAccount] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const checkAdmin = async (connectedAccount) => {
-    try {
-      if (!window.ethereum) return;
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-      const isUserGovernor = await contract.isGovernor(connectedAccount);
-      setIsAdmin(isUserGovernor);
-    } catch (error) {
-      console.error("Error checking governor status:", error);
-      setIsAdmin(false);
-    }
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) return alert("Please install MetaMask.");
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      if (accounts.length > 0) {
-        setAccount(accounts[0]);
-        await checkAdmin(accounts[0]);
-      }
-    } catch (error) {
-      console.error("Failed to connect:", error);
-    }
-  };
-
-  useEffect(() => {
-    const checkIfWalletIsConnected = async () => {
-      if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_accounts", []);
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          checkAdmin(accounts[0]);
-        }
-        window.ethereum.on("accountsChanged", (newAccounts) => {
-          if (newAccounts.length > 0) {
-            setAccount(newAccounts[0]);
-            checkAdmin(newAccounts[0]);
-          } else {
-            setAccount("");
-            setIsAdmin(false);
-          }
-        });
-      }
-    };
-    checkIfWalletIsConnected();
-  }, []);
+  // Pulling directly from our global Web3Context
+  const { account, isAdmin, isLawyer, connectWallet } = useWeb3();
 
   const formatAddress = (addr) => `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
 
@@ -69,10 +18,12 @@ const NavigationBar = () => {
 
           {/* Connected Links */}
           {account && (
-            <>
-              <Link to="/upload" className="text-gray-600 hover:text-blue-600 font-medium">Upload Portal</Link>
-              <Link to="/sign" className="text-gray-600 hover:text-blue-600 font-medium">Sign Portal</Link>
-            </>
+            <Link to="/sign" className="text-gray-600 hover:text-blue-600 font-medium">Sign Portal</Link>
+          )}
+
+          {/* UPGRADED: Only show Upload Portal if the user holds the Lawyer role */}
+          {isLawyer && (
+            <Link to="/upload" className="text-gray-600 hover:text-blue-600 font-medium">Upload Portal</Link>
           )}
           
           {/* Admin Link */}

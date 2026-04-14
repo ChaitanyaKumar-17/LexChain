@@ -3,28 +3,30 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
 
-// 1. Create the Context
 const Web3Context = createContext();
 
-// 2. Create the Provider Component
 export const Web3Provider = ({ children }) => {
   const [account, setAccount] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLawyer, setIsLawyer] = useState(false); // NEW: Track the Lawyer role
   const [isInitializing, setIsInitializing] = useState(true);
 
-  const checkAdmin = async (connectedAccount) => {
+  // UPGRADED: Checks both Governor and Lawyer status
+  const checkRoles = async (connectedAccount) => {
     try {
       if (!window.ethereum) return;
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
       
-      // UPGRADED: We now check the 'isGovernor' mapping instead of the old 'admin()' variable
-      const isUserGovernor = await contract.isGovernor(connectedAccount);
-      setIsAdmin(isUserGovernor);
+      const govStatus = await contract.isGovernor(connectedAccount);
+      const lawyerStatus = await contract.isLawyer(connectedAccount);
       
+      setIsAdmin(govStatus);
+      setIsLawyer(lawyerStatus);
     } catch (error) {
-      console.error("Error checking governor status:", error);
+      console.error("Error checking roles:", error);
       setIsAdmin(false);
+      setIsLawyer(false);
     }
   };
 
@@ -35,7 +37,7 @@ export const Web3Provider = ({ children }) => {
       const accounts = await provider.send("eth_requestAccounts", []);
       if (accounts.length > 0) {
         setAccount(accounts[0]);
-        await checkAdmin(accounts[0]);
+        await checkRoles(accounts[0]);
       }
     } catch (error) {
       console.error("Connection failed:", error);
@@ -49,16 +51,17 @@ export const Web3Provider = ({ children }) => {
         const accounts = await provider.send("eth_accounts", []);
         if (accounts.length > 0) {
           setAccount(accounts[0]);
-          await checkAdmin(accounts[0]);
+          await checkRoles(accounts[0]);
         }
         
         window.ethereum.on("accountsChanged", (newAccounts) => {
           if (newAccounts.length > 0) {
             setAccount(newAccounts[0]);
-            checkAdmin(newAccounts[0]);
+            checkRoles(newAccounts[0]);
           } else {
             setAccount("");
             setIsAdmin(false);
+            setIsLawyer(false);
           }
         });
       }
@@ -67,13 +70,11 @@ export const Web3Provider = ({ children }) => {
     init();
   }, []);
 
-  // 3. Provide the data to the rest of the app
   return (
-    <Web3Context.Provider value={{ account, isAdmin, connectWallet, isInitializing }}>
+    <Web3Context.Provider value={{ account, isAdmin, isLawyer, connectWallet, isInitializing }}>
       {children}
     </Web3Context.Provider>
   );
 };
 
-// Custom hook to easily grab this data anywhere
 export const useWeb3 = () => useContext(Web3Context);

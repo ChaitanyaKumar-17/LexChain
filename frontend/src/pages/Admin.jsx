@@ -1,8 +1,8 @@
+// src/pages/Admin.jsx
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
-import { useWeb3 } from "../context/Web3Context";
-import { ShieldCheck, Search, Clock, CheckCircle, AlertTriangle, FileText, UserPlus, PenTool } from "lucide-react";
+import { ShieldCheck, Search, Clock, CheckCircle, AlertTriangle, FileText, Users } from "lucide-react";
 
 export default function Admin() {
   const [hashInput, setHashInput] = useState("");
@@ -13,8 +13,10 @@ export default function Admin() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
-  const [newGovernorAddress, setNewGovernorAddress] = useState("");
-  const [isAddingGov, setIsAddingGov] = useState(false);
+  const [targetAddress, setTargetAddress] = useState("");
+  const [roleAction, setRoleAction] = useState("grant"); // 'grant' or 'revoke'
+  const [targetRole, setTargetRole] = useState("lawyer"); // 'lawyer' or 'governor'
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
 
   useEffect(() => {
     fetchPendingList();
@@ -34,29 +36,49 @@ export default function Admin() {
       }));
       setPendingDocuments(formattedDocs);
     } catch (err) {
-      console.error("Failed to fetch pending list from backend:", err);
+      console.error("Failed to fetch pending list:", err);
     } finally {
       setLoadingList(false);
     }
   };
 
-  const handleAddGovernor = async (e) => {
+  const handleRoleUpdate = async (e) => {
     e.preventDefault();
-    if (!newGovernorAddress) return;
-    setIsAddingGov(true); setError(""); setStatus("Waiting for wallet approval...");
+    if (!targetAddress) return;
+    
+    setIsUpdatingRole(true);
+    setStatus("Waiting for wallet approval...");
+    setError("");
+
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const tx = await contract.addGovernor(newGovernorAddress);
+
+      let tx;
+      setStatus(`Sending transaction to ${roleAction} ${targetRole}...`);
+
+      // Dynamically call the correct smart contract function based on dropdown selections
+      if (roleAction === "grant" && targetRole === "lawyer") tx = await contract.addLawyer(targetAddress);
+      else if (roleAction === "revoke" && targetRole === "lawyer") tx = await contract.removeLawyer(targetAddress);
+      else if (roleAction === "grant" && targetRole === "governor") tx = await contract.addGovernor(targetAddress);
+      else if (roleAction === "revoke" && targetRole === "governor") tx = await contract.removeGovernor(targetAddress);
+
       setStatus("Waiting for block confirmation...");
-      await tx.wait(); 
-      alert(`Success! ${newGovernorAddress} is now an authorized Governor.`);
-      setNewGovernorAddress(""); 
+      await tx.wait();
+
+      alert(`Success! Operation completed: ${roleAction.toUpperCase()} ${targetRole.toUpperCase()}`);
+      setTargetAddress("");
     } catch (err) {
-      alert("Failed to add Governor. Make sure you are using an existing Governor account.");
+      console.error(err);
+      if (err.message.includes("Safety Check")) {
+        alert("Action denied: You cannot remove yourself from the Governor role.");
+      } else {
+        alert("Transaction failed. Ensure the address is correct and you have permission.");
+      }
     } finally {
-      setIsAddingGov(false); setStatus("");
+      setIsUpdatingRole(false);
+      setStatus("");
     }
   };
 
@@ -69,7 +91,6 @@ export default function Admin() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
       
-      // NEW: Capturing the 5 return values from the updated verify() function
       const [isVerified, ipfsHash, timestamp, sigCount, reqCount] = await contract.verify(hashInput);
 
       if (timestamp === 0n) {
@@ -104,6 +125,7 @@ export default function Admin() {
         maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
         maxFeePerGas: ethers.parseUnits("40", "gwei")
       });
+      
       setStatus("Waiting for block confirmation...");
       await tx.wait(); 
 
@@ -128,10 +150,45 @@ export default function Admin() {
       <h2 className="text-3xl font-bold text-slate-800 mb-8">Admin Dashboard</h2>
 
       <div className="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-8">
-        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2"><UserPlus size={20} /> Authorize New Governor</h3>
-        <form onSubmit={handleAddGovernor} className="flex gap-3">
-          <input type="text" placeholder="Enter 0x... Wallet Address" value={newGovernorAddress} onChange={(e) => setNewGovernorAddress(e.target.value)} className="flex-1 p-3 border border-slate-300 rounded-lg font-mono text-sm" disabled={isAddingGov}/>
-          <button type="submit" disabled={isAddingGov} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 whitespace-nowrap">{isAddingGov ? "Processing..." : "Grant Access"}</button>
+        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
+          <Users size={20} /> System Role Management
+        </h3>
+        <form onSubmit={handleRoleUpdate} className="flex flex-col md:flex-row gap-3">
+          <select 
+            value={roleAction} 
+            onChange={(e) => setRoleAction(e.target.value)}
+            className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold bg-slate-50"
+          >
+            <option value="grant">Grant Access</option>
+            <option value="revoke">Revoke Access</option>
+          </select>
+
+          <select 
+            value={targetRole} 
+            onChange={(e) => setTargetRole(e.target.value)}
+            className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold bg-slate-50"
+          >
+            <option value="lawyer">Lawyer (Uploader)</option>
+            <option value="governor">Governor (Admin)</option>
+          </select>
+
+          <input 
+            type="text" 
+            placeholder="0x... Target Wallet Address" 
+            value={targetAddress} 
+            onChange={(e) => setTargetAddress(e.target.value)} 
+            className="flex-1 p-3 border border-slate-300 rounded-lg font-mono text-sm" 
+            required
+            disabled={isUpdatingRole}
+          />
+
+          <button 
+            type="submit" 
+            disabled={isUpdatingRole} 
+            className={`${roleAction === 'grant' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 whitespace-nowrap`}
+          >
+            {isUpdatingRole ? "Processing..." : "Execute Role Update"}
+          </button>
         </form>
       </div>
 
@@ -152,15 +209,12 @@ export default function Admin() {
             <div className="border border-slate-200 rounded-xl p-6 bg-white shadow-sm">
               <div className="space-y-3 mb-6">
                 <p className="text-sm text-slate-600"><span className="font-semibold text-slate-800">Uploaded:</span> {documentDetails.date}</p>
-                
-                {/* NEW: Display Signature Progress */}
                 <div className="flex items-center gap-2 mt-2 border-t border-slate-100 pt-2">
                   <span className="font-semibold text-slate-800 text-sm">Signatures:</span>
                   <span className={`text-xs font-bold px-2 py-1 rounded-full ${documentDetails.signatures === documentDetails.requiredSignatures ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                     {documentDetails.signatures} / {documentDetails.requiredSignatures} Collected
                   </span>
                 </div>
-
                 <div className="flex items-center gap-2 mt-2">
                   <span className="font-semibold text-slate-800 text-sm">Status:</span>
                   {documentDetails.isVerified ? (
@@ -174,7 +228,6 @@ export default function Admin() {
               {!documentDetails.isVerified && (
                 <button
                   onClick={() => handleVerify(documentDetails.hash)}
-                  // Block early verification!
                   disabled={loading || documentDetails.signatures < documentDetails.requiredSignatures}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition disabled:bg-slate-400 flex justify-center items-center gap-2"
                 >
@@ -200,7 +253,6 @@ export default function Admin() {
                   <p className="text-sm font-mono text-slate-600 truncate mb-2">Hash: {doc.hash.substring(0, 16)}...</p>
                   <div className="flex justify-between mt-3">
                      <a href={`https://gateway.pinata.cloud/ipfs/${doc.ipfsHash}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:text-blue-800 font-medium">Review ↗</a>
-                     {/* We send the hash to manual search to check signatures first */}
                      <button onClick={() => {setHashInput(doc.hash); handleSearch({preventDefault:()=>null});}} className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-1.5 px-4 rounded">Check Status</button>
                   </div>
                 </div>
