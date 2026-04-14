@@ -17,10 +17,13 @@ export const Web3Provider = ({ children }) => {
       if (!window.ethereum) return;
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-      const adminAddress = await contract.admin();
-      setIsAdmin(connectedAccount.toLowerCase() === adminAddress.toLowerCase());
+      
+      // UPGRADED: We now check the 'isGovernor' mapping instead of the old 'admin()' variable
+      const isUserGovernor = await contract.isGovernor(connectedAccount);
+      setIsAdmin(isUserGovernor);
+      
     } catch (error) {
-      console.error("Error checking admin:", error);
+      console.error("Error checking governor status:", error);
       setIsAdmin(false);
     }
   };

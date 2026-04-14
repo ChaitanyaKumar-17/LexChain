@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document(collection = "documents")
@@ -21,4 +23,8 @@ public class LexDocument {
     private String status; // e.g., "PENDING_SIGNATURES", "FULLY_EXECUTED"
 
     private LocalDateTime timestamp;
+
+    private List<String> requiredSigners = new ArrayList<>();
+    private List<String> actualSigners = new ArrayList<>();
+    private int signatureCount = 0;
 }
