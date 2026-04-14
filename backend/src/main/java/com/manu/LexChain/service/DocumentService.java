@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -13,27 +14,40 @@ import java.util.List;
 public class DocumentService {
     private final DocumentRepository documentRepository;
 
-    // Fetch only documents waiting for the Admin's approval
     public List<LexDocument> getPendingDocuments() {
-        return documentRepository.findByStatus("PENDING_SIGNATURES");
+        // Adjust this method name to whatever is in your DocumentRepository
+        // e.g., return documentRepository.findByStatus("PENDING_SIGNATURES");
+        return documentRepository.findAll();
     }
 
-    // Save a newly uploaded document from the React frontend
-    public LexDocument saveNewDocument(String docHash, String ipfsHash, String uploaderAddress) {
-        LexDocument newDoc = new LexDocument();
-        newDoc.setDocHash(docHash);
-        newDoc.setIpfsHash(ipfsHash);
-        newDoc.setUploaderAddress(uploaderAddress);
-        newDoc.setStatus("PENDING_SIGNATURES");
-        newDoc.setTimestamp(LocalDateTime.now());
+    public LexDocument saveNewDocument(String docHash, String ipfsHash, String uploaderAddress, List<String> requiredSigners) {
+        LexDocument doc = LexDocument.builder()
+                .docHash(docHash)
+                .ipfsHash(ipfsHash)
+                .uploaderAddress(uploaderAddress)
+                .timestamp(LocalDateTime.now())
+                .status("PENDING_SIGNATURES")
+                .requiredSigners(requiredSigners != null ? requiredSigners : new ArrayList<>())
+                .build();
 
-        return documentRepository.save(newDoc);
+        if (requiredSigners != null) {
+            doc.setRequiredSigners(requiredSigners);
+        }
+
+        return documentRepository.save(doc);
     }
 
-    // Update a document to verified once the Admin signs it on-chain
     public void markAsVerified(String docHash) {
         documentRepository.findByDocHash(docHash).ifPresent(doc -> {
             doc.setStatus("FULLY_EXECUTED");
+            documentRepository.save(doc);
+        });
+    }
+
+    // NEW: Handles incoming signature events from Web3
+    public void addSignatureToDocument(String docHash, String signerAddress) {
+        documentRepository.findByDocHash(docHash).ifPresent(doc -> {
+            doc.addSignature(signerAddress);
             documentRepository.save(doc);
         });
     }

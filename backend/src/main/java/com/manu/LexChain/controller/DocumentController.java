@@ -15,39 +15,30 @@ import java.util.Map;
 public class DocumentController {
     private final DocumentService documentService;
 
-    /**
-     * GET /api/documents/pending
-     * This perfectly matches the fetch request in your React admin.jsx!
-     */
     @GetMapping("/pending")
     public ResponseEntity<List<LexDocument>> getPendingDocuments() {
         List<LexDocument> pendingDocs = documentService.getPendingDocuments();
         return ResponseEntity.ok(pendingDocs);
     }
 
-    /**
-     * POST /api/documents
-     * React will call this to save document metadata to MongoDB AFTER
-     * a successful MetaMask transaction.
-     */
     @PostMapping
-    public ResponseEntity<?> saveDocument(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> saveDocument(@RequestBody Map<String, Object> payload) {
         try {
-            String docHash = payload.get("docHash");
-            String ipfsHash = payload.get("ipfsHash");
-            String uploader = payload.get("uploaderAddress");
+            String docHash = (String) payload.get("docHash");
+            String ipfsHash = (String) payload.get("ipfsHash");
+            String uploader = (String) payload.get("uploaderAddress");
 
-            LexDocument savedDoc = documentService.saveNewDocument(docHash, ipfsHash, uploader);
+            // Extract the array of required signers from React
+            @SuppressWarnings("unchecked")
+            List<String> requiredSigners = (List<String>) payload.get("requiredSigners");
+
+            LexDocument savedDoc = documentService.saveNewDocument(docHash, ipfsHash, uploader, requiredSigners);
             return ResponseEntity.ok(savedDoc);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to save document metadata: " + e.getMessage());
         }
     }
 
-    /**
-     * PUT /api/documents/verify/{docHash}
-     * React Admin calls this after successfully approving the document on-chain.
-     */
     @PutMapping("/verify/{docHash}")
     public ResponseEntity<?> verifyDocument(@PathVariable String docHash) {
         documentService.markAsVerified(docHash);

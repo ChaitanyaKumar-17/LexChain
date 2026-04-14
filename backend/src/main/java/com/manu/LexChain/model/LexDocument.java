@@ -1,6 +1,9 @@
 package com.manu.LexChain.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "documents")
 public class LexDocument {
 
@@ -24,7 +30,19 @@ public class LexDocument {
 
     private LocalDateTime timestamp;
 
+    @Builder.Default
     private List<String> requiredSigners = new ArrayList<>();
+
+    @Builder.Default
     private List<String> actualSigners = new ArrayList<>();
+
+    @Builder.Default
     private int signatureCount = 0;
+
+    public void addSignature(String signerAddress) {
+        if (!this.actualSigners.contains(signerAddress)) {
+            this.actualSigners.add(signerAddress);
+            this.signatureCount++;
+        }
+    }
 }

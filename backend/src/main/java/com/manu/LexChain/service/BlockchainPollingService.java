@@ -36,7 +36,6 @@ public class BlockchainPollingService {
 
     private BigInteger lastBlockChecked;
 
-    // Define the events exactly like the ABI
     private final Event documentUploadedEvent = new Event("DocumentUploaded", Arrays.asList(
             new TypeReference<Uint256>(false) {},
             new TypeReference<Utf8String>(false) {},
@@ -49,9 +48,12 @@ public class BlockchainPollingService {
             new TypeReference<Address>(false) {}
     ));
 
-    /**
-     * Runs once on startup to find the current block.
-     */
+    // NEW: Define the DocumentSigned event matching your ABI
+    private final Event documentSignedEvent = new Event("DocumentSigned", Arrays.asList(
+            new TypeReference<Utf8String>(false) {},
+            new TypeReference<Address>(false) {}
+    ));
+
     @PostConstruct
     public void init() {
         try {
@@ -62,32 +64,21 @@ public class BlockchainPollingService {
         }
     }
 
-    /**
-     * The robust polling function. Runs every 5000ms (5 seconds).
-     */
     @Scheduled(fixedDelay = 5000)
     public void pollForEvents() {
         if (lastBlockChecked == null) return;
 
         try {
             BigInteger latestBlock = web3j.ethBlockNumber().send().getBlockNumber();
-
-            // If no new blocks, exit and wait for the next cycle
-            if (latestBlock.compareTo(lastBlockChecked) <= 0) {
-                return;
-            }
+            if (latestBlock.compareTo(lastBlockChecked) <= 0) return;
 
             BigInteger startBlock = lastBlockChecked.add(BigInteger.ONE);
 
-            // --- Process Uploads ---
-            EthFilter uploadFilter = new EthFilter(
-                    DefaultBlockParameter.valueOf(startBlock),
-                    DefaultBlockParameter.valueOf(latestBlock),
-                    contractAddress
-            );
+            // --- 1. Process Uploads ---
+            EthFilter uploadFilter = new EthFilter(DefaultBlockParameter.valueOf(startBlock), DefaultBlockParameter.valueOf(latestBlock), contractAddress);
             uploadFilter.addSingleTopic(EventEncoder.encode(documentUploadedEvent));
-
             List<EthLog.LogResult> uploadLogs = web3j.ethGetLogs(uploadFilter).send().getLogs();
+
             for (EthLog.LogResult logResult : uploadLogs) {
                 org.web3j.protocol.core.methods.response.Log ethLog = (org.web3j.protocol.core.methods.response.Log) logResult.get();
                 List<Type> results = FunctionReturnDecoder.decode(ethLog.getData(), documentUploadedEvent.getNonIndexedParameters());
@@ -98,22 +89,40 @@ public class BlockchainPollingService {
 
                 try {
                     String ipfsHash = fetchIpfsHashFromContract(docHash);
-                    documentService.saveNewDocument(docHash, ipfsHash, uploader);
-                    log.info("💾 Successfully saved to MongoDB!");
+                    // Required signers are now saved via REST API first, this acts as a fallback/sync.
+                    // For safety, you might skip DB creation here if the REST API handles it,
+                    // but keeping it ensures decentralized resilience.
+                    documentService.saveNewDocument(docHash, ipfsHash, uploader, null);
                 } catch (Exception e) {
                     log.error("Error saving DB: {}", e.getMessage());
                 }
             }
 
-            // --- Process Verifications ---
-            EthFilter verifyFilter = new EthFilter(
-                    DefaultBlockParameter.valueOf(startBlock),
-                    DefaultBlockParameter.valueOf(latestBlock),
-                    contractAddress
-            );
-            verifyFilter.addSingleTopic(EventEncoder.encode(documentVerifiedEvent));
+            // --- 2. Process Signatures (NEW) ---
+            EthFilter signFilter = new EthFilter(DefaultBlockParameter.valueOf(startBlock), DefaultBlockParameter.valueOf(latestBlock), contractAddress);
+            signFilter.addSingleTopic(EventEncoder.encode(documentSignedEvent));
+            List<EthLog.LogResult> signLogs = web3j.ethGetLogs(signFilter).send().getLogs();
 
+            for (EthLog.LogResult logResult : signLogs) {
+                org.web3j.protocol.core.methods.response.Log ethLog = (org.web3j.protocol.core.methods.response.Log) logResult.get();
+                List<Type> results = FunctionReturnDecoder.decode(ethLog.getData(), documentSignedEvent.getNonIndexedParameters());
+
+                String docHash = (String) results.get(0).getValue();
+                String signer = (String) results.get(1).getValue();
+                log.info("\n✍️ Document Signed! Hash: {} by {}", docHash, signer);
+
+                try {
+                    documentService.addSignatureToDocument(docHash, signer);
+                } catch (Exception e) {
+                    log.error("Error updating signature in DB: {}", e.getMessage());
+                }
+            }
+
+            // --- 3. Process Verifications ---
+            EthFilter verifyFilter = new EthFilter(DefaultBlockParameter.valueOf(startBlock), DefaultBlockParameter.valueOf(latestBlock), contractAddress);
+            verifyFilter.addSingleTopic(EventEncoder.encode(documentVerifiedEvent));
             List<EthLog.LogResult> verifyLogs = web3j.ethGetLogs(verifyFilter).send().getLogs();
+
             for (EthLog.LogResult logResult : verifyLogs) {
                 org.web3j.protocol.core.methods.response.Log ethLog = (org.web3j.protocol.core.methods.response.Log) logResult.get();
                 List<Type> results = FunctionReturnDecoder.decode(ethLog.getData(), documentVerifiedEvent.getNonIndexedParameters());
@@ -123,13 +132,11 @@ public class BlockchainPollingService {
 
                 try {
                     documentService.markAsVerified(docHash);
-                    log.info("💾 Updated status in MongoDB!");
                 } catch (Exception e) {
                     log.error("Error updating DB: {}", e.getMessage());
                 }
             }
 
-            // Update tracker
             lastBlockChecked = latestBlock;
 
         } catch (Exception e) {
@@ -137,15 +144,12 @@ public class BlockchainPollingService {
         }
     }
 
-    /**
-     * Helper to grab the missing IPFS hash directly from the contract state.
-     */
     private String fetchIpfsHashFromContract(String docHash) throws Exception {
         Function function = new Function("documents",
                 Collections.singletonList(new Utf8String(docHash)),
                 Arrays.asList(
                         new TypeReference<Uint256>() {},
-                        new TypeReference<Utf8String>() {}, // ipfsHash
+                        new TypeReference<Utf8String>() {},
                         new TypeReference<Utf8String>() {},
                         new TypeReference<Address>() {},
                         new TypeReference<Address>() {},

@@ -3,15 +3,19 @@ import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
 import { generateFileHash } from "../utils/hash";
 import { uploadToIPFS } from "../utils/pinata";
+import { useWeb3 } from "../context/Web3Context"; // NEW IMPORT
 import { UploadCloud, Clock, CheckCircle, Plus, Trash2 } from "lucide-react";
 
 export default function Upload() {
   const [file, setFile] = useState(null);
-  const [signers, setSigners] = useState(["", ""]); // Default 2 empty signers
+  const [signers, setSigners] = useState(["", ""]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // NEW: Grab the uploader's account from your global context
+  const { account } = useWeb3();
 
   const handleSignerChange = (index, value) => {
     const newSigners = [...signers];
@@ -23,9 +27,9 @@ export default function Upload() {
     e.preventDefault();
     if (!file) return setError("Please select a file first.");
 
-    // Filter out empty signer inputs
     const validSigners = signers.filter(s => s.trim() !== "");
     if (validSigners.length === 0) return setError("You must add at least one required signer.");
+    if (!account) return setError("Please connect your wallet first.");
 
     setLoading(true);
     setError("");
@@ -55,12 +59,28 @@ export default function Upload() {
       setStatus("Uploading new file to IPFS...");
       const ipfsHash = await uploadToIPFS(file);
 
+      setStatus("Syncing metadata to local database...");
+
+      const apiResponse = await fetch("http://localhost:5000/api/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+              docHash: docHash,
+              ipfsHash: ipfsHash,
+              uploaderAddress: account,
+              requiredSigners: validSigners // Sending the array!
+          })
+      });
+      
+      if (!apiResponse.ok) {
+          throw new Error("Failed to sync with local database. Blockchain transaction halted.");
+      }
+
       setStatus("Waiting for wallet approval...");
       const signer = await provider.getSigner(); 
       const contractWithSigner = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       setStatus("Sending transaction to blockchain...");
-      // NEW: Passing the validSigners array to the contract
       const tx = await contractWithSigner.uploadDocument(ipfsHash, docHash, validSigners, {
         maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
         maxFeePerGas: ethers.parseUnits("40", "gwei")
@@ -89,7 +109,6 @@ export default function Upload() {
       </p>
 
       <form onSubmit={handleUpload} className="w-full grid md:grid-cols-2 gap-8 items-start">
-        {/* LEFT: File Upload */}
         <div className="w-full border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition relative bg-white h-64 flex flex-col justify-center">
           <input
             type="file"
@@ -103,7 +122,6 @@ export default function Upload() {
           </p>
         </div>
 
-        {/* RIGHT: Signers */}
         <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-6 h-64 flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-800">Required Signatories</h3>
@@ -140,7 +158,6 @@ export default function Upload() {
           </div>
         </div>
 
-        {/* Submit Area */}
         <div className="md:col-span-2 w-full max-w-lg mx-auto">
           {error && <p className="text-red-500 bg-red-50 p-3 rounded-lg mb-4 text-center">{error}</p>}
           {success && (
