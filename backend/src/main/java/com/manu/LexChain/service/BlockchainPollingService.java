@@ -98,7 +98,7 @@ public class BlockchainPollingService {
                 }
             }
 
-            // --- 2. Process Signatures (NEW) ---
+            // --- 2. Process Signatures ---
             EthFilter signFilter = new EthFilter(DefaultBlockParameter.valueOf(startBlock), DefaultBlockParameter.valueOf(latestBlock), contractAddress);
             signFilter.addSingleTopic(EventEncoder.encode(documentSignedEvent));
             List<EthLog.LogResult> signLogs = web3j.ethGetLogs(signFilter).send().getLogs();

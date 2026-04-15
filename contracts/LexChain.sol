@@ -4,9 +4,6 @@ pragma solidity ^0.8.19;
 contract LexChain {
     uint256 public docCount;
     
-    // ==========================================
-    // ROLE-BASED ACCESS CONTROL (RBAC) MAPPINGS
-    // ==========================================
     mapping(address => bool) public isGovernor;
     mapping(address => bool) public isLawyer; // NEW: Track authorized uploaders
 
@@ -36,9 +33,6 @@ contract LexChain {
     event LawyerAdded(address indexed account);
     event LawyerRemoved(address indexed account);
 
-    // ==========================================
-    // MODIFIERS (The Security Gates)
-    // ==========================================
     modifier onlyGovernor() {
         require(isGovernor[msg.sender], "Unauthorized: Governors only");
         _;
@@ -57,9 +51,6 @@ contract LexChain {
         isLawyer[msg.sender] = true;
     }
 
-    // ==========================================
-    // GOVERNOR ADMINISTRATION (Whitelist / Blacklist)
-    // ==========================================
     function addGovernor(address _account) public onlyGovernor {
         require(!isGovernor[_account], "Account is already a Governor");
         isGovernor[_account] = true;
@@ -85,11 +76,6 @@ contract LexChain {
         emit LawyerRemoved(_account);
     }
 
-    // ==========================================
-    // CORE LOGIC
-    // ==========================================
-
-    // UPGRADED: Only whitelisted Lawyers can upload documents now!
     function uploadDocument(string memory _ipfsHash, string memory _docHash, address[] memory _signers) public onlyLawyer {
         require(documents[_docHash].timestamp == 0, "Document already exists");
         
