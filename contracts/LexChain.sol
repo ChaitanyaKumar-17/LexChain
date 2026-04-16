@@ -33,6 +33,7 @@ contract LexChain {
     event LawyerAdded(address indexed account);
     event LawyerRemoved(address indexed account);
 
+
     modifier onlyGovernor() {
         require(isGovernor[msg.sender], "Unauthorized: Governors only");
         _;
