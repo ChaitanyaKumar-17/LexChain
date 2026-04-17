@@ -1,1 +1,32 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Apply overscroll-none to the html tag to strictly prevent browser bouncing */
+  html {
+    @apply overscroll-none;
+  }
+
+  body {
+    @apply bg-legal-base text-text-dark-primary font-sans overscroll-none;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Hide standard scrollbars for Firefox and IE/Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+  }
+
+  /* Hide standard scrollbars for Chrome, Safari, and Opera */
+  body::-webkit-scrollbar {
+    display: none; 
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-header font-bold text-text-dark-headers tracking-tight;
+  }
+}

@@ -157,7 +157,8 @@ export default function Admin() {
           <select 
             value={roleAction} 
             onChange={(e) => setRoleAction(e.target.value)}
-            className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold bg-slate-50"
+            // UPDATED: Dark theme styling for dropdowns
+            className="p-3 border border-legal-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-trust-teal font-bold bg-legal-base text-text-dark-primary"
           >
             <option value="grant">Grant Access</option>
             <option value="revoke">Revoke Access</option>
@@ -166,7 +167,8 @@ export default function Admin() {
           <select 
             value={targetRole} 
             onChange={(e) => setTargetRole(e.target.value)}
-            className="p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold bg-slate-50"
+            // UPDATED: Dark theme styling for dropdowns
+            className="p-3 border border-legal-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-trust-teal font-bold bg-legal-base text-text-dark-primary"
           >
             <option value="lawyer">Lawyer (Uploader)</option>
             <option value="governor">Governor (Admin)</option>
@@ -177,7 +179,8 @@ export default function Admin() {
             placeholder="0x... Target Wallet Address" 
             value={targetAddress} 
             onChange={(e) => setTargetAddress(e.target.value)} 
-            className="flex-1 p-3 border border-slate-300 rounded-lg font-mono text-sm" 
+            // UPDATED: Dark theme styling for input fields
+            className="flex-1 p-3 border border-legal-muted bg-legal-base text-text-dark-primary rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-trust-teal placeholder-text-dark-secondary/50" 
             required
             disabled={isUpdatingRole}
           />
@@ -185,7 +188,8 @@ export default function Admin() {
           <button 
             type="submit" 
             disabled={isUpdatingRole} 
-            className={`${roleAction === 'grant' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 whitespace-nowrap`}
+            // UPDATED: Made the buttons fit the darker aesthetic better
+            className={`${roleAction === 'grant' ? 'bg-trust-teal hover:bg-trust-teal/80 text-legal-base' : 'bg-dark-error hover:bg-dark-error/80 text-white'} font-bold py-3 px-6 rounded-lg transition disabled:opacity-50 whitespace-nowrap`}
           >
             {isUpdatingRole ? "Processing..." : "Execute Role Update"}
           </button>
