@@ -12,7 +12,7 @@ export default {
         'legal-muted': '#1F242A', 
         
         'authority-gold': '#C5A065', 
-        'trust-teal': '#00A896', 
+        'seal-crimson': '#A31F34', 
         'blockchain-blue': '#10A1F0', 
         
         'dark-success': '#2EA043',

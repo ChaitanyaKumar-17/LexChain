@@ -1,9 +1,10 @@
+// src/pages/Upload.jsx
 import { useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
 import { generateFileHash } from "../utils/hash";
 import { uploadToIPFS } from "../utils/pinata";
-import { useWeb3 } from "../context/Web3Context"; // NEW IMPORT
+import { useWeb3 } from "../context/Web3Context"; 
 import { UploadCloud, Clock, CheckCircle, Plus, Trash2 } from "lucide-react";
 
 export default function Upload() {
@@ -14,7 +15,6 @@ export default function Upload() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // NEW: Grab the uploader's account from your global context
   const { account } = useWeb3();
 
   const handleSignerChange = (index, value) => {
@@ -68,7 +68,7 @@ export default function Upload() {
               docHash: docHash,
               ipfsHash: ipfsHash,
               uploaderAddress: account,
-              requiredSigners: validSigners // Sending the array!
+              requiredSigners: validSigners 
           })
       });
       
@@ -103,32 +103,33 @@ export default function Upload() {
 
   return (
     <div className="flex flex-col items-center mt-10 w-full max-w-4xl mx-auto px-4">
-      <h2 className="text-3xl font-bold text-slate-800 mb-6">Upload & Route Document</h2>
-      <p className="text-slate-600 mb-8 text-center max-w-md">
+      <h2 className="text-3xl font-bold text-text-dark-headers mb-6">Upload & Route Document</h2>
+      <p className="text-text-dark-secondary mb-8 text-center max-w-md">
         Secure your document and assign the wallets required to sign it.
       </p>
 
       <form onSubmit={handleUpload} className="w-full grid md:grid-cols-2 gap-8 items-start">
-        <div className="w-full border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition relative bg-white h-64 flex flex-col justify-center">
+        
+        <div className="w-full border-2 border-dashed border-legal-muted bg-legal-muted/40 rounded-xl p-8 text-center hover:bg-legal-muted/60 transition relative h-64 flex flex-col justify-center">
           <input
             type="file"
             onChange={(e) => setFile(e.target.files[0])}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             disabled={loading}
           />
-          <UploadCloud className="mx-auto text-blue-500 mb-4" size={48} />
-          <p className="text-slate-600 font-medium">
+          <UploadCloud className="mx-auto text-seal-crimson mb-4" size={48} />
+          <p className="text-text-dark-primary font-medium">
             {file ? file.name : "Click or Drag & Drop a file here"}
           </p>
         </div>
 
-        <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-6 h-64 flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-800">Required Signatories</h3>
+        <div className="w-full bg-legal-surface border border-legal-muted rounded-xl p-6 h-64 flex flex-col">
+          <div className="flex justify-between items-center mb-4 border-b border-legal-muted pb-2">
+            <h3 className="font-bold text-text-dark-headers">Required Signatories</h3>
             <button 
               type="button" 
               onClick={() => setSigners([...signers, ""])}
-              className="text-blue-600 hover:text-blue-800 flex items-center text-sm font-bold"
+              className="text-blockchain-blue hover:text-blockchain-blue/80 flex items-center text-sm font-bold"
             >
               <Plus size={16}/> Add Signer
             </button>
@@ -141,14 +142,14 @@ export default function Upload() {
                   placeholder="0x... Wallet Address"
                   value={addr}
                   onChange={(e) => handleSignerChange(index, e.target.value)}
-                  className="flex-1 p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  className="flex-1 p-2 bg-legal-base border border-legal-muted text-text-dark-primary rounded focus:outline-none focus:ring-2 focus:ring-seal-crimson font-mono text-sm placeholder-text-dark-secondary/50"
                   disabled={loading}
                 />
                 {signers.length > 1 && (
                   <button 
                     type="button" 
                     onClick={() => setSigners(signers.filter((_, i) => i !== index))}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded"
+                    className="p-2 text-dark-error hover:bg-dark-error/10 rounded transition"
                   >
                     <Trash2 size={18}/>
                   </button>
@@ -159,16 +160,16 @@ export default function Upload() {
         </div>
 
         <div className="md:col-span-2 w-full max-w-lg mx-auto">
-          {error && <p className="text-red-500 bg-red-50 p-3 rounded-lg mb-4 text-center">{error}</p>}
+          {error && <p className="text-dark-error bg-dark-error/10 border border-dark-error/20 p-3 rounded-lg mb-4 text-center">{error}</p>}
           {success && (
-            <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-4 flex items-center justify-center gap-2">
+            <div className="bg-dark-success/10 text-dark-success border border-dark-success/20 p-4 rounded-lg mb-4 flex items-center justify-center gap-2">
               <CheckCircle size={20} /> <p className="font-medium">{status}</p>
             </div>
           )}
           <button
             type="submit"
             disabled={!file || loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition disabled:bg-slate-400 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+            className="w-full bg-seal-crimson hover:bg-seal-crimson/80 text-white font-bold py-3 px-4 rounded-lg transition disabled:bg-legal-muted disabled:text-text-dark-secondary disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
             {loading ? <><Clock className="animate-spin" size={20} />{status}</> : "Secure Document on Blockchain"}
           </button>

@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* Apply overscroll-none to the html tag to strictly prevent browser bouncing */
+  /* Strictly prevent browser bouncing */
   html {
     @apply overscroll-none;
   }
@@ -22,7 +22,7 @@
   }
 
   /* Hide standard scrollbars for Chrome, Safari, and Opera */
-  body::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     display: none; 
   }
 
