@@ -51,4 +51,17 @@ public class DocumentService {
             documentRepository.save(doc);
         });
     }
+
+    // NEW: Find documents where this specific user is REQUIRED to sign, but HAS NOT signed yet.
+    public List<LexDocument> getPendingSignaturesForUser(String walletAddress) {
+        List<LexDocument> allDocs = documentRepository.findAll();
+
+        return allDocs.stream()
+                .filter(doc -> !doc.getStatus().equals("FULLY_EXECUTED")) // Skip finished docs
+                .filter(doc -> doc.getRequiredSigners() != null &&
+                        doc.getRequiredSigners().stream().anyMatch(addr -> addr.equalsIgnoreCase(walletAddress))) // Must be required
+                .filter(doc -> doc.getActualSigners() == null ||
+                        doc.getActualSigners().stream().noneMatch(addr -> addr.equalsIgnoreCase(walletAddress))) // Must NOT have signed yet
+                .toList();
+    }
 }

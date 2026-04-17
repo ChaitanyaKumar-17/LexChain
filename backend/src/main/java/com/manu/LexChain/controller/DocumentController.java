@@ -44,4 +44,11 @@ public class DocumentController {
         documentService.markAsVerified(docHash);
         return ResponseEntity.ok().build();
     }
+
+    // NEW: Endpoint for the React Sign.jsx Inbox
+    @GetMapping("/signatory/{walletAddress}")
+    public ResponseEntity<List<LexDocument>> getMyPendingDocs(@PathVariable String walletAddress) {
+        List<LexDocument> myDocs = documentService.getPendingSignaturesForUser(walletAddress);
+        return ResponseEntity.ok(myDocs);
+    }
 }
