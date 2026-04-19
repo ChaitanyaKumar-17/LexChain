@@ -2,7 +2,6 @@
 import { Link } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 
-// The Custom SVG Logo Component (Gold Theme)
 const LexChainLogo = () => (
   <svg 
     width="34" 
