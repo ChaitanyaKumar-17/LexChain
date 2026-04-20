@@ -7,7 +7,7 @@ import Sign from "./pages/Sign.jsx";
 import Protected from "./components/Protected.jsx";
 import Admin from "./pages/Admin.jsx";
 import { Web3Provider } from "./context/Web3Context.jsx";
-import { MonitorSmartphone } from "lucide-react"; // NEW: Icon for the mobile blocker
+import { MonitorSmartphone } from "lucide-react";
 
 function App() {
   return (
@@ -18,8 +18,8 @@ function App() {
             MOBILE BLOCKER SCREEN
             Visible only on screens < 768px width
         ========================================= */}
-        <div className="flex md:hidden h-screen w-screen bg-legal-base flex-col items-center justify-center p-8 text-center overscroll-none overflow-hidden">
-          <div className="bg-legal-muted/40 p-6 rounded-full mb-8 border border-legal-muted shadow-lg">
+        <div className="mobile-blocker">
+          <div className="mobile-blocker-icon">
             <MonitorSmartphone size={56} className="text-seal-crimson" />
           </div>
           <h2 className="text-2xl font-header font-bold text-text-dark-headers mb-4 tracking-tight">
@@ -36,10 +36,10 @@ function App() {
             MAIN APPLICATION
             Hidden on mobile, visible on >= 768px
         ========================================= */}
-        <div className="hidden md:flex h-screen flex-col bg-legal-base overflow-hidden">
+        <div className="hidden md:flex app-shell">
           <NavigationBar />
           
-          <main className="flex-1 overflow-y-auto w-full max-w-6xl mx-auto p-4 pb-12">
+          <main className="main-content">
             <Routes>
               <Route path="/" element={<Verify />} />
               <Route path="/upload" element={<Protected requireLawyer={true}><Upload /></Protected>} />

@@ -1,0 +1,41 @@
+/* ================================================================
+   Base — Tailwind Directives & Global Resets
+================================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply overscroll-none;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-legal-base text-text-dark-primary font-sans overscroll-none;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  /* Hide scrollbars for Chrome, Safari, Opera */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-header font-bold text-text-dark-headers tracking-tight;
+  }
+
+  /* ===== Global Form Element Theming ===== */
+
+  /* Consistent focus style across all interactive elements */
+  input:focus,
+  textarea:focus {
+    outline: none;
+  }
+}

@@ -73,22 +73,22 @@ export default function Sign() {
   };
 
   return (
-    <div className="flex flex-col items-center mt-10 w-full max-w-2xl mx-auto px-4">
-      <div className="bg-blockchain-blue/20 text-blockchain-blue p-4 rounded-full mb-4">
+    <div className="flex flex-col items-center mt-10 w-full max-w-2xl mx-auto">
+      <div className="icon-circle-blue mb-4">
         <PenTool size={40} />
       </div>
-      <h2 className="text-3xl font-bold text-text-dark-headers mb-2">Signatory Inbox</h2>
-      <p className="text-text-dark-secondary mb-8 text-center">
+      <h2 className="page-title mb-2">Signatory Inbox</h2>
+      <p className="page-subtitle mb-8">
         Review and sign legal documents assigned to your wallet address.
       </p>
 
       {error && (
-        <div className="w-full bg-dark-error/10 border border-dark-error/20 text-dark-error p-4 rounded-lg mb-6 flex items-center gap-3">
-          <AlertTriangle size={20} /> <p className="font-medium text-sm">{error}</p>
+        <div className="alert-error w-full mb-6 flex items-start gap-3">
+          <AlertTriangle size={20} className="mt-0.5 flex-shrink-0" /> <p className="font-medium">{error}</p>
         </div>
       )}
 
-      <div className="w-full bg-legal-surface border border-legal-muted rounded-xl p-6 shadow-sm min-h-[300px]">
+      <div className="card-surface w-full p-6 shadow-sm min-h-[300px]">
         {loadingList ? (
           <div className="flex flex-col items-center justify-center h-48 text-text-dark-secondary">
             <Clock className="animate-spin mb-2" size={24} />
@@ -103,12 +103,12 @@ export default function Sign() {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4 border-b border-legal-muted pb-2">
-              <FileText size={18} className="text-text-dark-secondary"/> 
+              <FileText size={18} className="text-text-dark-secondary shrink-0"/> 
               <span className="font-bold text-text-dark-primary">Action Required ({pendingDocs.length})</span>
             </div>
             
             {pendingDocs.map((doc, index) => (
-              <div key={index} className="bg-legal-base border border-legal-muted rounded-lg p-4 hover:bg-legal-muted/40 transition flex flex-col md:flex-row justify-between items-center gap-4">
+              <div key={index} className="card-base p-4 hover:bg-legal-muted/40 transition flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div className="flex-1 w-full overflow-hidden">
                   <p className="text-xs text-text-dark-secondary mb-1">Uploaded: {new Date(doc.timestamp).toLocaleString()}</p>
                   <p className="text-sm font-mono text-text-dark-primary truncate w-full mb-2">Hash: {doc.docHash}</p>
@@ -125,7 +125,7 @@ export default function Sign() {
                 <button
                   onClick={() => handleSign(doc.docHash)}
                   disabled={processingHash !== null}
-                  className="w-full md:w-auto bg-seal-crimson hover:bg-seal-crimson/80 text-white font-bold py-2 px-6 rounded shadow-sm transition disabled:bg-legal-muted disabled:text-text-dark-secondary whitespace-nowrap"
+                  className="btn-primary w-full lg:w-auto py-2 px-6 shadow-sm whitespace-nowrap"
                 >
                   {processingHash === doc.docHash ? "Processing..." : "Sign Document"}
                 </button>

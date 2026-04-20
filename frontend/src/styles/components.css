@@ -1,0 +1,173 @@
+/* ================================================================
+   Components — Reusable UI Classes
+================================================================ */
+
+@layer components {
+
+  /* ===== Buttons ===== */
+  .btn-primary {
+    @apply bg-seal-crimson hover:bg-seal-crimson/80 text-white font-bold rounded-lg transition;
+  }
+  .btn-primary:disabled {
+    @apply bg-legal-muted text-text-dark-secondary cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-dark-error hover:bg-dark-error/80 text-white font-bold rounded-lg transition;
+  }
+  .btn-danger:disabled {
+    @apply opacity-50;
+  }
+
+  .btn-gold {
+    @apply bg-legal-muted hover:bg-legal-muted/80 text-authority-gold font-bold rounded-lg transition border border-authority-gold/20;
+  }
+
+  .btn-remove {
+    @apply flex items-center gap-1.5 text-xs text-dark-error hover:text-dark-error/80 font-medium transition bg-dark-error/10 px-3 py-1.5 rounded-full;
+  }
+
+  .btn-icon-danger {
+    @apply p-2 text-dark-error hover:bg-dark-error/10 rounded transition shrink-0;
+  }
+
+
+  /* ===== Cards ===== */
+  .card-surface {
+    @apply bg-legal-surface border border-legal-muted rounded-xl;
+  }
+
+  .card-base {
+    @apply bg-legal-base border border-legal-muted rounded-xl;
+  }
+
+
+  /* ===== Form Inputs =====
+     Uses border-color change on focus instead of ring to avoid
+     the ring bleeding outside the element's bounding box.
+  ===== */
+  .input-field {
+    @apply min-w-0 p-3 border border-legal-muted bg-legal-base text-text-dark-primary rounded-lg
+           text-sm transition-colors duration-150;
+  }
+  .input-field:focus {
+    @apply border-seal-crimson shadow-[0_0_0_1px_rgba(163,31,52,0.4)];
+    outline: none;
+  }
+
+  .input-mono {
+    @apply min-w-0 p-3 border border-legal-muted bg-legal-base text-text-dark-primary rounded-lg
+           font-mono text-sm placeholder-text-dark-secondary/50 transition-colors duration-150;
+  }
+  .input-mono:focus {
+    @apply border-seal-crimson shadow-[0_0_0_1px_rgba(163,31,52,0.4)];
+    outline: none;
+  }
+
+
+  /* ===== Custom Select Component =====
+     Fully themed dropdown replacing native <select> elements.
+     Works with the CustomSelect.jsx component.
+  ===== */
+  .custom-select-trigger {
+    @apply w-full p-3 border border-legal-muted rounded-lg
+           font-bold bg-legal-base text-text-dark-primary text-sm
+           transition-all duration-150 cursor-pointer
+           flex items-center justify-between gap-2 text-left;
+  }
+  .custom-select-trigger:hover {
+    @apply bg-legal-muted/30 border-legal-muted/80;
+  }
+  .custom-select-trigger-open,
+  .custom-select-trigger:focus {
+    @apply border-seal-crimson shadow-[0_0_0_1px_rgba(163,31,52,0.4)];
+    outline: none;
+  }
+  .custom-select-trigger:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .custom-select-menu {
+    @apply absolute z-50 top-[calc(100%+4px)] left-0 w-full
+           bg-legal-surface border border-legal-muted rounded-lg
+           shadow-xl shadow-black/40 overflow-hidden;
+    animation: selectFadeIn 0.15s ease-out;
+  }
+
+  .custom-select-option {
+    @apply w-full px-4 py-2.5 text-left text-sm font-medium
+           text-text-dark-primary hover:bg-legal-muted/60
+           transition-colors duration-100 cursor-pointer
+           border-b border-legal-muted/40 last:border-b-0;
+  }
+  .custom-select-option-active {
+    @apply bg-seal-crimson/15 text-seal-crimson hover:bg-seal-crimson/25;
+  }
+
+  @keyframes selectFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+
+  /* ===== File Dropzone ===== */
+  .dropzone {
+    @apply w-full border-2 border-dashed border-legal-muted bg-legal-muted/40 rounded-xl
+           p-8 text-center hover:bg-legal-muted/60 transition relative
+           flex flex-col justify-center;
+  }
+
+
+  /* ===== Alerts ===== */
+  .alert-error {
+    @apply bg-dark-error/10 border border-dark-error/20 text-dark-error p-4 rounded-lg text-sm;
+  }
+
+  .alert-success {
+    @apply bg-dark-success/10 border border-dark-success/20 text-dark-success p-4 rounded-lg text-sm;
+  }
+
+
+  /* ===== Badges ===== */
+  .badge-success {
+    @apply bg-dark-success/20 text-dark-success text-xs font-bold px-2 py-1 rounded-full
+           inline-flex items-center gap-1;
+  }
+
+  .badge-warning {
+    @apply bg-dark-warning/20 text-dark-warning text-xs font-bold px-2 py-1 rounded-full
+           inline-flex items-center gap-1;
+  }
+
+  .badge-info {
+    @apply bg-blockchain-blue/20 text-blockchain-blue text-xs font-bold px-2 py-1 rounded-full;
+  }
+
+
+  /* ===== Page Typography ===== */
+  .page-title {
+    @apply text-3xl font-bold text-text-dark-headers text-center;
+  }
+
+  .page-subtitle {
+    @apply text-text-dark-secondary text-base text-center max-w-md;
+  }
+
+  .section-title {
+    @apply text-lg font-bold text-text-dark-headers border-b border-legal-muted pb-2;
+  }
+
+
+  /* ===== Icon Containers ===== */
+  .icon-circle-crimson {
+    @apply bg-seal-crimson text-white p-3 rounded-full;
+  }
+
+  .icon-circle-blue {
+    @apply bg-blockchain-blue/20 text-blockchain-blue p-4 rounded-full;
+  }
+
+  .icon-circle-file {
+    @apply bg-seal-crimson/10 p-3 rounded-full;
+  }
+}

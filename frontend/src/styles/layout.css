@@ -1,0 +1,108 @@
+/* ================================================================
+   Layout — App Shell, Mobile Blocker & Navigation
+================================================================ */
+
+@layer components {
+
+  /* ===== App Shell ===== */
+  .app-shell {
+    @apply h-screen flex-col bg-legal-base overflow-hidden;
+  }
+
+  .main-content {
+    @apply flex-1 overflow-y-auto w-full max-w-6xl mx-auto px-6 lg:px-4 py-4 pb-12;
+  }
+
+
+  /* ===== Mobile Blocker ===== */
+  .mobile-blocker {
+    @apply flex md:hidden h-screen w-screen bg-legal-base
+           flex-col items-center justify-center p-8 text-center
+           overscroll-none overflow-hidden;
+  }
+
+  .mobile-blocker-icon {
+    @apply bg-legal-muted/40 p-6 rounded-full mb-8 border border-legal-muted shadow-lg;
+  }
+
+
+  /* ===== Navigation Bar ===== */
+  .navbar {
+    @apply bg-legal-surface shadow-lg border-b border-legal-muted sticky top-0 z-50;
+  }
+
+  .navbar-inner {
+    @apply max-w-6xl mx-auto flex justify-between items-center px-4 py-3 lg:py-4;
+  }
+
+  .navbar-brand {
+    @apply flex items-center gap-2.5 shrink-0;
+  }
+
+  .navbar-brand-title {
+    @apply text-xl lg:text-2xl font-header font-bold text-white tracking-tighter pt-0.5;
+  }
+
+
+  /* ===== Nav Links ===== */
+  .nav-link {
+    @apply text-text-dark-secondary hover:text-blockchain-blue
+           font-medium transition duration-150 text-sm
+           flex items-center gap-1.5;
+  }
+
+  .nav-link-active {
+    @apply text-blockchain-blue;
+  }
+
+  .nav-link-warning {
+    @apply text-dark-warning hover:text-dark-warning/80
+           font-medium transition duration-150 text-sm
+           flex items-center gap-1.5;
+  }
+
+
+  /* ===== Mobile / Tablet Nav ===== */
+  .mobile-nav-link {
+    @apply text-text-dark-secondary hover:text-blockchain-blue hover:bg-legal-muted/60
+           font-medium transition duration-150 text-sm py-3 px-4 rounded-lg;
+  }
+
+  .mobile-nav-link-active {
+    @apply text-blockchain-blue bg-blockchain-blue/10;
+  }
+
+  .mobile-nav-link-warning {
+    @apply text-dark-warning hover:text-dark-warning/80 hover:bg-legal-muted/60
+           font-medium transition duration-150 text-sm py-3 px-4 rounded-lg;
+  }
+
+  .wallet-btn {
+    @apply bg-legal-muted hover:bg-legal-muted/80 text-authority-gold
+           px-4 xl:px-5 py-2 xl:py-2.5 rounded-lg text-sm font-bold
+           transition duration-200 shadow-sm flex items-center gap-2
+           border border-authority-gold/20 whitespace-nowrap;
+  }
+
+  .wallet-address-mobile {
+    @apply text-authority-gold text-xs font-mono bg-legal-muted
+           px-3 py-1.5 rounded-lg border border-authority-gold/20;
+  }
+
+  .hamburger-btn {
+    @apply text-text-dark-secondary hover:text-text-dark-primary
+           p-2 rounded-lg hover:bg-legal-muted/60 transition;
+  }
+
+  .mobile-menu {
+    @apply overflow-hidden transition-all duration-300 ease-in-out;
+  }
+
+  .mobile-menu-inner {
+    @apply px-4 pb-4 pt-1 flex flex-col gap-1 border-t border-legal-muted;
+  }
+
+  .mobile-wallet-btn {
+    @apply mt-2 w-full py-3 rounded-lg text-sm font-bold transition duration-200;
+  }
+}

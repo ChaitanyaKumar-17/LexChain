@@ -1,6 +1,8 @@
 // src/components/NavigationBar.jsx
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
+import { Menu, X } from "lucide-react";
 
 const LexChainLogo = () => (
   <svg 
@@ -60,48 +62,104 @@ const LexChainLogo = () => (
 
 const NavigationBar = () => {
   const { account, isAdmin, isLawyer, connectWallet } = useWeb3();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const formatAddress = (addr) => `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-
-  const navLinkClass = "text-text-dark-secondary hover:text-blockchain-blue font-medium transition duration-150 text-sm flex items-center gap-1.5";
+  const isActive = (path) => location.pathname === path;
+  const closeMobile = () => setMobileMenuOpen(false);
 
   return (
-    <nav className="bg-legal-surface shadow-lg border-b border-legal-muted p-4 mb-8 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
+    <nav className="navbar">
+      <div className="navbar-inner">
         
-        {/* Brand Logo & Name Area */}
-        <div className="flex items-center gap-3">
+        {/* Brand Logo & Name */}
+        <Link to="/" className="navbar-brand" onClick={closeMobile}>
           <LexChainLogo />
-          <h1 className="text-2xl font-header font-bold text-white tracking-tighter pt-1">
-            LexChain
-          </h1>
-        </div>
+          <h1 className="navbar-brand-title">LexChain</h1>
+        </Link>
         
-        <div className="flex items-center gap-6">
-          <Link to="/" className={navLinkClass}>Verify Document</Link>
+        {/* Desktop Navigation — hidden below lg */}
+        <div className="hidden lg:flex items-center gap-5 xl:gap-6">
+          <Link to="/" className={`nav-link ${isActive("/") ? "nav-link-active" : ""}`}>
+            Verify Document
+          </Link>
 
-          {/* Connected Links */}
           {account && (
-            <Link to="/sign" className={navLinkClass}>Sign Portal</Link>
+            <Link to="/sign" className={`nav-link ${isActive("/sign") ? "nav-link-active" : ""}`}>
+              Sign Portal
+            </Link>
           )}
 
-          {/* ROLE CHECK: Only visible to authorized Lawyers */}
           {isLawyer && (
-            <Link to="/upload" className={navLinkClass}>Upload Portal</Link>
+            <Link to="/upload" className={`nav-link ${isActive("/upload") ? "nav-link-active" : ""}`}>
+              Upload Portal
+            </Link>
           )}
           
-          {/* Admin Link with special highlighting */}
           {isAdmin && (
-            <Link to="/admin" className={`${navLinkClass} text-dark-warning`}>Gov Admin</Link>
+            <Link to="/admin" className="nav-link-warning">Gov Admin</Link>
           )}
 
-          {/* Connect Wallet Button: Sophisticated Muted Gold */}
-          <button
-            onClick={connectWallet}
-            className="bg-legal-muted hover:bg-legal-muted/80 text-authority-gold px-5 py-2.5 rounded-lg text-sm font-bold transition duration-200 shadow-sm flex items-center gap-2 border border-authority-gold/20"
-          >
+          <button onClick={connectWallet} className="wallet-btn">
             {account ? formatAddress(account) : "Connect Wallet"}
           </button>
+        </div>
+
+        {/* Tablet: Wallet Badge + Hamburger */}
+        <div className="flex lg:hidden items-center gap-3">
+          {account && (
+            <span className="wallet-address-mobile">
+              {formatAddress(account)}
+            </span>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="hamburger-btn"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Tablet Menu Dropdown */}
+      <div
+        className={`lg:hidden mobile-menu ${
+          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="mobile-menu-inner">
+          <Link to="/" className={`mobile-nav-link ${isActive("/") ? "mobile-nav-link-active" : ""}`} onClick={closeMobile}>
+            Verify Document
+          </Link>
+
+          {account && (
+            <Link to="/sign" className={`mobile-nav-link ${isActive("/sign") ? "mobile-nav-link-active" : ""}`} onClick={closeMobile}>
+              Sign Portal
+            </Link>
+          )}
+
+          {isLawyer && (
+            <Link to="/upload" className={`mobile-nav-link ${isActive("/upload") ? "mobile-nav-link-active" : ""}`} onClick={closeMobile}>
+              Upload Portal
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link to="/admin" className="mobile-nav-link-warning" onClick={closeMobile}>
+              Gov Admin
+            </Link>
+          )}
+
+          {!account && (
+            <button
+              onClick={() => { connectWallet(); closeMobile(); }}
+              className="mobile-wallet-btn btn-gold"
+            >
+              Connect Wallet
+            </button>
+          )}
         </div>
       </div>
     </nav>
