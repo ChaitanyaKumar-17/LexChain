@@ -58,10 +58,10 @@ export default function Admin() {
       let tx;
       setStatus(`Sending transaction to ${roleAction} ${targetRole}...`);
 
-      if (roleAction === "grant" && targetRole === "lawyer") tx = await contract.addLawyer(targetAddress);
-      else if (roleAction === "revoke" && targetRole === "lawyer") tx = await contract.removeLawyer(targetAddress);
-      else if (roleAction === "grant" && targetRole === "governor") tx = await contract.addGovernor(targetAddress);
-      else if (roleAction === "revoke" && targetRole === "governor") tx = await contract.removeGovernor(targetAddress);
+      if (roleAction === "grant" && targetRole === "lawyer") tx = await contract.addLawyer(targetAddress, { gasLimit: 300000 });
+      else if (roleAction === "revoke" && targetRole === "lawyer") tx = await contract.removeLawyer(targetAddress, { gasLimit: 300000 });
+      else if (roleAction === "grant" && targetRole === "governor") tx = await contract.addGovernor(targetAddress, { gasLimit: 300000 });
+      else if (roleAction === "revoke" && targetRole === "governor") tx = await contract.removeGovernor(targetAddress, { gasLimit: 300000 });
 
       setStatus("Waiting for block confirmation...");
       await tx.wait();
@@ -120,9 +120,9 @@ export default function Admin() {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       
       setStatus("Sending verification transaction...");
+      
       const tx = await contract.verifyDocument(targetHash, {
-        maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
-        maxFeePerGas: ethers.parseUnits("40", "gwei")
+          gasLimit: 500000 
       });
       
       setStatus("Waiting for block confirmation...");

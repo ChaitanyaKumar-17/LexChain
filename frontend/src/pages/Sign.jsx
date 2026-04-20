@@ -44,11 +44,11 @@ export default function Sign() {
       if (!window.ethereum) throw new Error("Please install MetaMask.");
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
+      
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       const tx = await contract.signDocument(docHash, {
-        maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
-        maxFeePerGas: ethers.parseUnits("40", "gwei")
+          gasLimit: 500000 
       });
 
       setStatus("Waiting for block confirmation...");
@@ -59,7 +59,7 @@ export default function Sign() {
 
     } catch (err) {
       console.error(err);
-      if (err.message.includes("Unauthorized")) {
+      if (err.message.includes("Unauthorized") || err.message.includes("not a required signer")) {
         setError("Blockchain Error: You are not an authorized signer for this document.");
       } else if (err.message.includes("already signed")) {
         setError("You have already signed this document.");

@@ -66,8 +66,7 @@ export default function Upload() {
 
       setStatus("Sending transaction to blockchain...");
       const tx = await contractWithSigner.uploadDocument(ipfsHash, docHash, validSigners, {
-        maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
-        maxFeePerGas: ethers.parseUnits("40", "gwei")
+          gasLimit: 500000 
       });
       
       // 2. Wait for immutable confirmation
