@@ -2,7 +2,9 @@ package com.manu.LexChain.controller;
 
 import com.manu.LexChain.model.LexDocument;
 import com.manu.LexChain.service.DocumentService;
+import com.manu.LexChain.repository.DocumentRepository; // NEW IMPORT
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +15,9 @@ import java.util.Map;
 @RequestMapping("/api/documents")
 @RequiredArgsConstructor
 public class DocumentController {
+
     private final DocumentService documentService;
+    private final DocumentRepository documentRepository; // NEW: Injected to check for duplicates
 
     @GetMapping("/pending")
     public ResponseEntity<List<LexDocument>> getPendingDocuments() {
@@ -25,10 +29,15 @@ public class DocumentController {
     public ResponseEntity<?> saveDocument(@RequestBody Map<String, Object> payload) {
         try {
             String docHash = (String) payload.get("docHash");
+
+            if (documentRepository.findByDocHash(docHash).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Document with this hash already exists off-chain.");
+            }
+
             String ipfsHash = (String) payload.get("ipfsHash");
             String uploader = (String) payload.get("uploaderAddress");
 
-            // Extract the array of required signers from React
             @SuppressWarnings("unchecked")
             List<String> requiredSigners = (List<String>) payload.get("requiredSigners");
 
@@ -45,7 +54,6 @@ public class DocumentController {
         return ResponseEntity.ok().build();
     }
 
-    // NEW: Endpoint for the React Sign.jsx Inbox
     @GetMapping("/signatory/{walletAddress}")
     public ResponseEntity<List<LexDocument>> getMyPendingDocs(@PathVariable String walletAddress) {
         List<LexDocument> myDocs = documentService.getPendingSignaturesForUser(walletAddress);

@@ -13,6 +13,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGO_URI}
+      auto-index-creation: true
 
 
 

@@ -1,5 +1,7 @@
 package com.manu.LexChain.service;
 
+import com.manu.LexChain.model.LexDocument;
+import com.manu.LexChain.repository.DocumentRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,6 +33,7 @@ import java.util.List;
 public class BlockchainPollingService {
     private final Web3j web3j;
     private final DocumentService documentService;
+    private final DocumentRepository documentRepository;
 
     @Value("${blockchain.contract.address}")
     private String contractAddress;
@@ -48,7 +52,6 @@ public class BlockchainPollingService {
             new TypeReference<Address>(false) {}
     ));
 
-    // NEW: Define the DocumentSigned event matching your ABI
     private final Event documentSignedEvent = new Event("DocumentSigned", Arrays.asList(
             new TypeReference<Utf8String>(false) {},
             new TypeReference<Address>(false) {}
@@ -88,11 +91,21 @@ public class BlockchainPollingService {
                 log.info("\n🔥 New Document Detected! Hash: {}", docHash);
 
                 try {
-                    String ipfsHash = fetchIpfsHashFromContract(docHash);
-                    // Required signers are now saved via REST API first, this acts as a fallback/sync.
-                    // For safety, you might skip DB creation here if the REST API handles it,
-                    // but keeping it ensures decentralized resilience.
-                    documentService.saveNewDocument(docHash, ipfsHash, uploader, null);
+                    Optional<LexDocument> existingDocOpt = documentRepository.findByDocHash(docHash);
+
+                    if (existingDocOpt.isEmpty()) {
+                        // The REST API failed or hasn't hit yet, so we pull from blockchain as fallback
+                        String ipfsHash = fetchIpfsHashFromContract(docHash);
+                        documentService.saveNewDocument(docHash, ipfsHash, uploader, null);
+                        log.info("Document saved via polling fallback (REST API missed it).");
+                    } else {
+                        LexDocument existingDoc = existingDocOpt.get();
+
+                        if (!"PENDING_SIGNATURES".equals(existingDoc.getStatus())) {
+                            existingDoc.setStatus("PENDING_SIGNATURES");
+                            documentRepository.save(existingDoc);
+                        }
+                    }
                 } catch (Exception e) {
                     log.error("Error saving DB: {}", e.getMessage());
                 }
