@@ -2,14 +2,14 @@ package com.manu.LexChain.controller;
 
 import com.manu.LexChain.model.LexDocument;
 import com.manu.LexChain.service.DocumentService;
-import com.manu.LexChain.repository.DocumentRepository; // NEW IMPORT
+import com.manu.LexChain.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -17,7 +17,7 @@ import java.util.Map;
 public class DocumentController {
 
     private final DocumentService documentService;
-    private final DocumentRepository documentRepository; // NEW: Injected to check for duplicates
+    private final DocumentRepository documentRepository;
 
     @GetMapping("/pending")
     public ResponseEntity<List<LexDocument>> getPendingDocuments() {
@@ -29,20 +29,31 @@ public class DocumentController {
     public ResponseEntity<?> saveDocument(@RequestBody Map<String, Object> payload) {
         try {
             String docHash = (String) payload.get("docHash");
-
-            if (documentRepository.findByDocHash(docHash).isPresent()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Document with this hash already exists off-chain.");
-            }
-
             String ipfsHash = (String) payload.get("ipfsHash");
             String uploader = (String) payload.get("uploaderAddress");
 
             @SuppressWarnings("unchecked")
             List<String> requiredSigners = (List<String>) payload.get("requiredSigners");
 
+            Optional<LexDocument> existingDocOpt = documentRepository.findByDocHash(docHash);
+
+            if (existingDocOpt.isPresent()) {
+
+                LexDocument existingDoc = existingDocOpt.get();
+                existingDoc.setIpfsHash(ipfsHash);
+                existingDoc.setRequiredSigners(requiredSigners);
+
+                if (!"PENDING_SIGNATURES".equals(existingDoc.getStatus())) {
+                    existingDoc.setStatus("PENDING_SIGNATURES");
+                }
+
+                LexDocument savedDoc = documentRepository.save(existingDoc);
+                return ResponseEntity.ok(savedDoc);
+            }
+
             LexDocument savedDoc = documentService.saveNewDocument(docHash, ipfsHash, uploader, requiredSigners);
             return ResponseEntity.ok(savedDoc);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to save document metadata: " + e.getMessage());
         }

@@ -59,8 +59,23 @@ export default function Upload() {
       setStatus("Uploading new file to IPFS...");
       const ipfsHash = await uploadToIPFS(file);
 
-      setStatus("Syncing metadata to local database...");
+      // 1. Request Wallet Signature BEFORE touching the DB
+      setStatus("Waiting for wallet approval...");
+      const signer = await provider.getSigner(); 
+      const contractWithSigner = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
+      setStatus("Sending transaction to blockchain...");
+      const tx = await contractWithSigner.uploadDocument(ipfsHash, docHash, validSigners, {
+        maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
+        maxFeePerGas: ethers.parseUnits("40", "gwei")
+      });
+      
+      // 2. Wait for immutable confirmation
+      setStatus("Waiting for block confirmation...");
+      await tx.wait();
+
+      // 3. ONLY if successful, sync to local database
+      setStatus("Syncing metadata to local database...");
       const apiResponse = await fetch("http://localhost:5000/api/documents", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -73,21 +88,8 @@ export default function Upload() {
       });
       
       if (!apiResponse.ok) {
-          throw new Error("Failed to sync with local database. Blockchain transaction halted.");
+          console.warn("Blockchain succeeded, but off-chain DB sync had a delay.");
       }
-
-      setStatus("Waiting for wallet approval...");
-      const signer = await provider.getSigner(); 
-      const contractWithSigner = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-      setStatus("Sending transaction to blockchain...");
-      const tx = await contractWithSigner.uploadDocument(ipfsHash, docHash, validSigners, {
-        maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
-        maxFeePerGas: ethers.parseUnits("40", "gwei")
-      });
-      
-      setStatus("Waiting for block confirmation...");
-      await tx.wait();
 
       setSuccess(true);
       setStatus("Document successfully secured and routed for signatures!");
