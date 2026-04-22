@@ -14,10 +14,6 @@ function App() {
     <Web3Provider>
       <BrowserRouter>
         
-        {/* =========================================
-            MOBILE BLOCKER SCREEN
-            Visible only on screens < 768px width
-        ========================================= */}
         <div className="mobile-blocker">
           <div className="mobile-blocker-icon">
             <MonitorSmartphone size={56} className="text-seal-crimson" />
