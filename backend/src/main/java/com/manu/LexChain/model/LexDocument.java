@@ -24,7 +24,7 @@ public class LexDocument {
 
     @Indexed(unique = true)
     private String docHash; // The local SHA-256 hash
-    private String ipfsHash; // The Pinata CID
+    private String ipfsHash;
 
     private String uploaderAddress; // The Creator who uploaded it
 
