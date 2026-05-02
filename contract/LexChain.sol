@@ -39,7 +39,6 @@ contract LexChain {
         _;
     }
 
-    // NEW: Restricts functions to authorized Lawyers only
     modifier onlyLawyer() {
         require(isLawyer[msg.sender], "Unauthorized: Authorized Lawyers only");
         _;
