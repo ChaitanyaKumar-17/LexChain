@@ -67,7 +67,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* RESULT CARD: Sophisticated Dark Charcoal Surface */}
       {result && result.timestamp > 0 && (
         <div className="w-full max-w-2xl bg-legal-surface border border-legal-muted rounded-2xl p-8 shadow-xl">
           <h3 className="text-2xl font-header font-bold border-b border-legal-muted pb-5 mb-5 tracking-tight text-text-dark-headers">
