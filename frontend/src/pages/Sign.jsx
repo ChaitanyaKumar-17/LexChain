@@ -1,4 +1,3 @@
-// src/pages/Sign.jsx
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../utils/config";
