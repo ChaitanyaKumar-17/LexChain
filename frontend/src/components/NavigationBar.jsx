@@ -13,7 +13,7 @@ const LexChainLogo = () => (
     xmlns="http://www.w3.org/2000/svg"
     className="transform transition-transform duration-300 hover:scale-105"
   >
-    {/* Outer Hexagon representing a Blockchain Node */}
+
     <path 
       d="M18 2.5L31 10V25L18 32.5L5 25V10L18 2.5Z" 
       stroke="#C5A065" 
