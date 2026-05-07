@@ -20,7 +20,6 @@ const LexChainLogo = () => (
       strokeWidth="2.5" 
       strokeLinejoin="round"
     />
-    {/* Center Legal Pillar */}
     <path 
       d="M18 9V26" 
       stroke="#C5A065" 
@@ -33,14 +32,12 @@ const LexChainLogo = () => (
       strokeWidth="2.5" 
       strokeLinecap="round"
     />
-    {/* The Scale Beam */}
     <path 
       d="M10 14H26" 
       stroke="#C5A065" 
       strokeWidth="2" 
       strokeLinecap="round"
     />
-    {/* Left Scale Pan */}
     <path 
       d="M10 14L7.5 21H12.5L10 14Z" 
       fill="#C5A065" 
