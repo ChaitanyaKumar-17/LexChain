@@ -27,7 +27,6 @@ const LexChainLogo = () => (
       strokeWidth="2.5" 
       strokeLinecap="round"
     />
-    {/* Base of the Pillar */}
     <path 
       d="M14 26H22" 
       stroke="#C5A065" 
