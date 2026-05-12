@@ -1,6 +1,5 @@
 @layer components {
 
-  /* ===== Buttons ===== */
   .btn-primary {
     @apply bg-seal-crimson hover:bg-seal-crimson/80 text-white font-bold rounded-lg transition;
   }
@@ -28,7 +27,6 @@
   }
 
 
-  /* ===== Cards ===== */
   .card-surface {
     @apply bg-legal-surface border border-legal-muted rounded-xl;
   }
