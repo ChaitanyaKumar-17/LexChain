@@ -177,7 +177,6 @@ export default function Admin() {
             />
           </div>
 
-          {/* Address + Button Row */}
           <div className="flex flex-col lg:flex-row gap-3">
             <input 
               type="text" 
